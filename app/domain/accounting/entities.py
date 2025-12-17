@@ -15,11 +15,13 @@ from app.domain.accounting.value_objects import Money, ExchangeRate
 from app.domain.accounting.rules import ensure_exchange_rate
 
 
+# Entidade Base
 class EntityBase:
     def __init__(self):
         self.id: UUID = uuid4() # identificador único da entidade
         self.created_at = datetime.now(timezone.utc) # data de criação
         self.updated_at = datetime.now(timezone.utc) # data de última atualização
+        self.deleted_at: datetime | None = None # data de exclusão lógica
 
 
 # Lançamento Contábil
@@ -119,6 +121,23 @@ class Account(EntityBase):
         self.default_currency = default_currency # moeda padrão (se aplicável)
 
         self.active = True # conta ativa por padrão
+
+
+    # RN-CONTA-05: verifica se pode adicionar subsaldo
+    def can_add_sub_balance(self, currency: str, existing_currencies: set[str]):
+        """
+        RN-CONTA-05:
+        Prevents duplicate currencies per account.
+        """
+
+        if not self.allows_multiple_balances:
+            if existing_currencies:
+                raise ValueError("Cash account supports only one sub-balance")
+
+        if currency in existing_currencies:
+            raise ValueError(
+                f"Sub-balance with currency {currency} already exists for this account"
+            )
         
 
 # Subsaldo da Conta
@@ -145,6 +164,23 @@ class SubBalance(EntityBase):
         self.maximum_balance = maximum_balance # saldo máximo permitido
 
         self.active = True # subsaldo ativo por padrão
+
+    # RN-CONTA-04: desativa subsaldo
+    def deactivate(self, has_entries: bool):
+        """
+        RN-CONTA-04:
+        Sub-balances with accounting entries cannot be deleted,
+        only deactivated.
+        """
+
+        if not has_entries:
+            # Mesmo sem lançamentos, o modelo opta por inativar (não excluir)
+            self.active = False
+        else:
+            self.active = False
+
+        self.updated_at = datetime.now(timezone.utc)
+        self.deleted_at = datetime.now(timezone.utc)
 
     # Verifica se é possível realizar um saque sem violar o saldo mínimo
     def can_withdraw(self, amount: Decimal) -> bool:

@@ -1,7 +1,6 @@
 # app/domain/accounting/enums.py
 from enum import Enum
 
-
 # Enumeração para classificação contábil (Macro)
 class AccountingType(str, Enum):
     """Classificação Contábil (Macro)"""
@@ -31,8 +30,8 @@ class AccountPurpose(str, Enum):
 
 
 class EntryType(str, Enum):
-    ENTRY = "ENTRY"   # ENTRADA
-    EXIT = "EXIT"     # SAIDA
+    INCOME = "INCOME"   # ENTRADA/RENDA
+    EXPENSE = "EXPENSE" # SAIDA/DESPESA
 
     # PRD RF-PRO-101 → ENTRADA / SAIDA
 

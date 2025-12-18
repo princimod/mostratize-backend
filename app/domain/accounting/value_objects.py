@@ -1,8 +1,10 @@
-# app
+# app/domain/accounting/value_objects.py
 from decimal import Decimal, ROUND_HALF_UP
 
 # Money
 class Money:
+    __slots__ = ("amount", "currency")
+
     def __init__(self, amount: Decimal, currency: str):
         if amount <= 0:
             raise ValueError("Amount must be greater than zero")

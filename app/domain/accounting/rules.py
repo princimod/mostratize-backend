@@ -1,4 +1,4 @@
-# 
+# app/domain/accounting/rules.py
 from decimal import Decimal
 from app.domain.accounting.exceptions import (
     MissingExchangeRate,

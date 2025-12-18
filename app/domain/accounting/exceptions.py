@@ -1,4 +1,4 @@
-# app
+# app/domain/accounting/exceptions.py
 class AccountingDomainError(Exception):
     """Base class for accounting domain errors"""
     pass

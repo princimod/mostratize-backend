@@ -1,5 +1,6 @@
 # app/domain/accounting/entities.py
 from uuid import UUID, uuid4
+from abc import ABC
 from datetime import datetime, date, timezone
 from decimal import Decimal
 
@@ -16,11 +17,11 @@ from app.domain.accounting.rules import ensure_exchange_rate
 
 
 # Entidade Base
-class EntityBase:
-    def __init__(self):
-        self.id: UUID = uuid4() # identificador único da entidade
+class EntityBase(ABC):    
+    def __init__(self, *, id: UUID | None = None):
+        self.id: UUID = id or uuid4() # identificador único da entidade
         self.created_at = datetime.now(timezone.utc) # data de criação
-        self.updated_at = datetime.now(timezone.utc) # data de última atualização
+        self.updated_at = self.created_at # data de última atualização
         self.deleted_at: datetime | None = None # data de exclusão lógica
 
 
@@ -206,12 +207,12 @@ class SubBalance(EntityBase):
         - RN-CONTA-03: respeitar limites
         """
 
-        if entry_type == EntryType.EXIT:
+        if entry_type == EntryType.EXPENSE:
             if not self.can_withdraw(amount):
                 raise ValueError("Minimum balance violation")
             self.current_balance -= amount
 
-        elif entry_type == EntryType.ENTRY:
+        elif entry_type == EntryType.INCOME:
             self.current_balance += amount
 
         else:
